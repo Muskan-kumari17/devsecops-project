@@ -58,3 +58,12 @@ jobs:
         with:
           name: security-reports
           path: bandit-report.txt
+
+       # 8. Upload reports so you can download them later
+    - name: Upload Security Reports
+      uses: actions/upload-artifact@v4
+      with:
+        name: security-reports
+        path: |
+          bandit-report.txt
+          dast-report.txt
