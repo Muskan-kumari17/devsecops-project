@@ -10,11 +10,11 @@ jobs:
   security-scan:
     runs-on: ubuntu-latest
     steps:
-      # 1. Pull the code from your repository
+      # 1. Pull the code
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # 2. Setup the Python environment
+      # 2. Setup Python
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -25,27 +25,26 @@ jobs:
         run: |
           pip install -r requirements.txt
 
-      # 4. SAST: Check for security issues in Python code
+      # 4. SAST: Check for security issues (STRICT)
       - name: Run Bandit (SAST)
-        continue-on-error: true
+        # We removed "continue-on-error: true" so it fails if bugs are found
         run: |
           pip install bandit
           bandit -r . -f txt -o bandit-report.txt
 
-      # 5. SCA: Check for vulnerable libraries
+      # 5. SCA: Check for vulnerable libraries (STRICT)
       - name: Run Safety (Dependency Check)
-        continue-on-error: true
         run: |
           pip install safety
           safety check --full-report
 
-      # 6. Container Security: Scan the filesystem
+      # 6. Container Security: Scan filesystem (STRICT)
       - name: Run Trivy (Container Scan)
         uses: aquasecurity/trivy-action@master
         with:
           scan-type: 'fs'
           format: 'table'
-          exit-code: '0'
+          exit-code: '1' # This '1' will force the pipeline to FAIL (RED) if vulnerabilities are found
           severity: 'CRITICAL,HIGH'
 
       # 7. DAST: Dynamic Analysis Placeholder
@@ -54,8 +53,9 @@ jobs:
           echo "Starting Dynamic Application Security Testing..."
           echo "DAST scan completed successfully." > dast-report.txt
 
-      # 8. Upload all security reports as Artifacts
+      # 8. Upload reports (Only runs if previous steps pass or you use 'always()')
       - name: Upload Security Reports
+        if: always() # This ensures you get your reports even if the build fails
         uses: actions/upload-artifact@v4
         with:
           name: security-reports
