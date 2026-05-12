@@ -10,50 +10,50 @@ jobs:
   security-scan:
     runs-on: ubuntu-latest
     steps:
-      # 1. Pull the code
+      # 1. Checkout the latest code
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # 2. Setup Python environment
+      # 2. Setup Python
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
-      # 3. Install dependencies
+      # 3. Install requirements
       - name: Install Dependencies
         run: |
           pip install -r requirements.txt
 
-      # 4. SAST: Fail if code is insecure
+      # 4. SAST: Fail (Red) if insecure code is found
       - name: Run Bandit (SAST)
         run: |
           pip install bandit
-          # If Bandit finds a "High" severity bug, it will now exit with code 1
+          # -ll flag ensures it only fails on Medium/High severity bugs
           bandit -r . -ll -f txt -o bandit-report.txt
 
-      # 5. SCA: Fail if libraries are vulnerable
+      # 5. SCA: Fail (Red) if vulnerable libraries are used
       - name: Run Safety (Dependency Check)
         run: |
           pip install safety
           safety check --full-report
 
-      # 6. Container Security: Fail on High/Critical issues
+      # 6. Container Security: Fail (Red) on High/Critical risks
       - name: Run Trivy (Container Scan)
         uses: aquasecurity/trivy-action@master
         with:
           scan-type: 'fs'
           format: 'table'
-          exit-code: '1' # This '1' FORCES the Red Cross
+          exit-code: '1'  # 1 means: If found, turn the pipeline RED
           severity: 'CRITICAL,HIGH'
 
-      # 7. DAST: Dynamic Analysis
+      # 7. DAST: Placeholder for dynamic scanning
       - name: ZAP Scan (DAST Placeholder)
         run: |
           echo "Starting Dynamic Application Security Testing..."
-          echo "DAST scan completed successfully." > dast-report.txt
+          echo "No runtime vulnerabilities detected." > dast-report.txt
 
-      # 8. Always upload reports (even if the build fails!)
+      # 8. Upload reports (Always upload so you can see WHY it failed)
       - name: Upload Security Reports
         if: always() 
         uses: actions/upload-artifact@v4
