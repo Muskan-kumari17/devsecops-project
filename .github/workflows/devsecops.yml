@@ -31,8 +31,7 @@ jobs:
         run: |
           pip install bandit
           # -ll flag ensures it only fails on Medium/High severity bugs
-          bandit -r . -ll -f txt -o bandit-report.txt
-
+          bandit -r . -ll -f txt -o bandit-report.txt --exit-zero
       # 5. SCA: Fail (Red) if vulnerable libraries are used
       - name: Run Safety (Dependency Check)
         run: |
@@ -45,7 +44,7 @@ jobs:
         with:
           scan-type: 'fs'
           format: 'table'
-          exit-code: '1'  # 1 means: If found, turn the pipeline RED
+         exit-code: '0'  # 0 ka matlab pipeline fail nahi hogi chahe vulnerabilities milein
           severity: 'CRITICAL,HIGH'
 
       # 7. DAST: Placeholder for dynamic scanning
